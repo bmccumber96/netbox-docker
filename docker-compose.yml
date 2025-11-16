@@ -15,7 +15,7 @@ services:
       timeout: 3s
       interval: 15s
     volumes:
-      # - ./configuration:/etc/netbox/config:z,ro
+      - ./home/brianmccumber/docker/netbox-docker/configuration:/etc/netbox/config:z,ro
       - netbox-media-files:/opt/netbox/netbox/media:rw
       - netbox-reports-files:/opt/netbox/netbox/reports:rw
       - netbox-scripts-files:/opt/netbox/netbox/scripts:rw
@@ -37,6 +37,10 @@ services:
   # postgres
   postgres:
     image: docker.io/postgres:17-alpine
+    environment: #taken from postgres.env in the netbox env folder
+      - "POSTGRES_DB=netbox"
+      - "POSTGRES_PASSWORD=J5brHrAXFLQSif0K"
+      - "POSTGRES_USER=netbox"
     healthcheck:
       test: pg_isready -q -t 2 -d $$POSTGRES_DB -U $$POSTGRES_USER
       start_period: 20s
@@ -54,6 +58,8 @@ services:
       - sh
       - -c # this is to evaluate the $REDIS_PASSWORD from the env
       - valkey-server --appendonly yes --requirepass $$REDIS_PASSWORD ## $$ because of docker-compose
+    environment: #taken from redis.env in the netbox env folder
+      - "REDIS_PASSWORD=H733Kdjndks81" 
     healthcheck: &redis-healthcheck
       test: '[ $$(valkey-cli --pass "$${REDIS_PASSWORD}" ping) = ''PONG'' ]'
       start_period: 5s
@@ -69,6 +75,8 @@ services:
       - sh
       - -c # this is to evaluate the $REDIS_PASSWORD from the env
       - valkey-server --requirepass $$REDIS_PASSWORD ## $$ because of docker-compose
+    environment: #taken from redis-cache.env in the netbox env folder
+      - "REDIS_PASSWORD=t4Ph722qJ5QHeQ1qfu36" 
     healthcheck: *redis-healthcheck
     env_file: env/redis-cache.env
     volumes:
